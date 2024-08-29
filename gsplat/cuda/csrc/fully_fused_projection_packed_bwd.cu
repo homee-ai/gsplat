@@ -324,8 +324,8 @@ fully_fused_projection_packed_bwd_tensor(
     const torch::Tensor &v_ray_planes,                    // [nnz, 2]
     const torch::Tensor &v_normals,                       // [nnz, 3]
     const bool viewmats_requires_grad, const bool sparse_grad) {
-    DEVICE_GUARD(means);
-    CHECK_INPUT(means);
+    GSPLAT_DEVICE_GUARD(means);
+    GSPLAT_CHECK_INPUT(means);
     if (covars.has_value()) {
         GSPLAT_CHECK_INPUT(covars.value());
     } else {

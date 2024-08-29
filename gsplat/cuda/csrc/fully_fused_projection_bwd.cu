@@ -163,7 +163,7 @@ __global__ void fully_fused_projection_bwd_kernel(
             image_width,
             image_height,
             v_covar2d,
-            glm::make_vec2(v_means2d), v_ray_plane, v_normal,
+            glm::make_vec2(v_means2d),
             v_ray_plane, 
             v_normal,
             v_mean_c,

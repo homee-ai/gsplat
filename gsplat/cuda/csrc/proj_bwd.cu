@@ -28,6 +28,8 @@ __global__ void proj_bwd_kernel(
     const bool ortho,
     const T *__restrict__ v_means2d,  // [C, N, 2]
     const T *__restrict__ v_covars2d, // [C, N, 2, 2]
+    const T *__restrict__ v_ray_planes,  // [C, N, 2]
+    const T *__restrict__ v_normals,     // [C, N, 3]
     T *__restrict__ v_means,          // [C, N, 3]
     T *__restrict__ v_covars          // [C, N, 3, 3]
 ) {
@@ -51,6 +53,8 @@ __global__ void proj_bwd_kernel(
     Ks += cid * 9;
     v_means2d += idx * 2;
     v_covars2d += idx * 4;
+    v_ray_planes += idx * 2;
+    v_normals += idx * 3;
 
     OpT fx = Ks[0], cx = Ks[2], fy = Ks[4], cy = Ks[5];
     mat3<OpT> v_covar(0.f);
@@ -59,6 +63,8 @@ __global__ void proj_bwd_kernel(
     const mat3<OpT> covar = glm::make_mat3(covars);
     const vec2<OpT> v_mean2d = glm::make_vec2(v_means2d);
     const mat2<OpT> v_covar2d = glm::make_mat2(v_covars2d);
+    const vec2<OpT> v_ray_plane = glm::make_vec2(v_ray_planes);
+    const vec3<OpT> v_normal = glm::make_vec3(v_normals);
 
     if (ortho){
         ortho_proj_vjp<OpT>(
@@ -87,6 +93,8 @@ __global__ void proj_bwd_kernel(
             height,
             glm::transpose(v_covar2d),
             v_mean2d,
+            v_ray_plane, 
+            v_normal,
             v_mean,
             v_covar
         );
@@ -105,6 +113,7 @@ __global__ void proj_bwd_kernel(
     for (uint32_t i = 0; i < 3; i++) {
         v_means[i] = T(v_mean[i]);
     }
+
 }
 
 std::tuple<torch::Tensor, torch::Tensor> proj_bwd_tensor(
@@ -115,7 +124,9 @@ std::tuple<torch::Tensor, torch::Tensor> proj_bwd_tensor(
     const uint32_t height,
     const bool ortho,
     const torch::Tensor &v_means2d, // [C, N, 2]
-    const torch::Tensor &v_covars2d // [C, N, 2, 2]
+    const torch::Tensor &v_covars2d, // [C, N, 2, 2]
+    const torch::Tensor &v_ray_planes,  // [C, N, 2]
+    const torch::Tensor &v_normals     // [C, N, 3]
 ) {
     GSPLAT_DEVICE_GUARD(means);
     GSPLAT_CHECK_INPUT(means);
@@ -154,6 +165,8 @@ std::tuple<torch::Tensor, torch::Tensor> proj_bwd_tensor(
                         v_means2d.data_ptr<scalar_t>(),
                         v_covars2d.data_ptr<scalar_t>(),
                         v_means.data_ptr<scalar_t>(),
+                        v_ray_planes.data_ptr<scalar_t>(), 
+                        v_normals.data_ptr<scalar_t>(),
                         v_covars.data_ptr<scalar_t>()
                     );
             }

@@ -202,7 +202,7 @@ __global__ void rasterize_to_pixels_fwd_kernel(
                 const S ray_t = ray_t_batch[t];
                 const vec2<S> ray_plane = ray_plane_batch[t];
                 const vec3<S> normal = normal_batch[t];
-                PRAGMA_UNROLL
+                GSPLAT_PRAGMA_UNROLL
                 for (uint32_t k = 0; k < 3; ++k) {
                     normal_out[k] += normal[k] * vis;
                 }
@@ -241,7 +241,7 @@ __global__ void rasterize_to_pixels_fwd_kernel(
             render_depths[pix_id] = t_out / ln;
             median_depths[pix_id] = t_median / ln;
             median_ids[pix_id] = median_idx;
-            PRAGMA_UNROLL
+            GSPLAT_PRAGMA_UNROLL
             for (uint32_t k = 0; k < 3; ++k){
                 render_normals[pix_id * 3 + k] = normal_out[k];
             }
@@ -291,9 +291,9 @@ T call_kernel_with_dim(
     constexpr bool GEO = output_size > 3;
     if constexpr (GEO)
     {
-        CHECK_INPUT(ray_ts);
-        CHECK_INPUT(ray_planes);
-        CHECK_INPUT(normals);
+        GSPLAT_CHECK_INPUT(ray_ts);
+        GSPLAT_CHECK_INPUT(ray_planes);
+        GSPLAT_CHECK_INPUT(normals);
     }
 
     uint32_t C = tile_offsets.size(0);         // number of cameras
@@ -409,8 +409,6 @@ T rasterize_to_pixels_fwd(
     const torch::Tensor &tile_offsets, // [C, tile_height, tile_width]
     const torch::Tensor &flatten_ids   // [n_isects]
 ){
-    CHECK_INPUT(colors);
-) {
     GSPLAT_CHECK_INPUT(colors);
     uint32_t channels = colors.size(-1);
 
@@ -498,4 +496,5 @@ rasterize_to_pixels_w_depth_fwd_tensor(
                                     (means2d, conics, colors, opacities, ray_ts, ray_planes, normals, 
                                         backgrounds, masks, image_width, image_height, tile_size, 
                                         Ks, tile_offsets, flatten_ids);
+}
 }

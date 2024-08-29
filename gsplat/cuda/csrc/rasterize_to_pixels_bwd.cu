@@ -426,11 +426,11 @@ T call_kernel_with_dim(
     constexpr bool GEO = output_size > 5;
     if constexpr (GEO)
     {
-        CHECK_INPUT(ray_ts);
-        CHECK_INPUT(ray_planes);
-        CHECK_INPUT(normals);
-        CHECK_INPUT(v_render_expected_depths);
-        CHECK_INPUT(v_render_expected_normals);
+        GSPLAT_CHECK_INPUT(ray_ts);
+        GSPLAT_CHECK_INPUT(ray_planes);
+        GSPLAT_CHECK_INPUT(normals);
+        GSPLAT_CHECK_INPUT(v_render_expected_depths);
+        GSPLAT_CHECK_INPUT(v_render_expected_normals);
     }
 
     uint32_t C = tile_offsets.size(0);         // number of cameras
@@ -673,3 +673,4 @@ rasterize_to_pixels_wo_depth_bwd_tensor(
                     v_render_expected_depths, v_render_median_depths, v_render_expected_normals, absgrad
                 );
 }
+} // namespace gsplat
